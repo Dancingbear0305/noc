@@ -1,0 +1,61 @@
+name: Validate and deploy public application
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */3 * * *"
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - uses: actions/cache/restore@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: public/news/vn.json
+          key: public-vn-news-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: public-vn-news-
+      - name: Update public RSS metadata only
+        if: github.event_name != 'pull_request'
+        id: news
+        continue-on-error: true
+        run: npm run news:update
+      - name: Report feed failure without blocking the static site
+        if: steps.news.outcome == 'failure'
+        run: echo 'News feeds could not be refreshed. The UI will show unavailable or stale status.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/cache/save@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: public/news/vn.json
+          key: public-vn-news-${{ github.run_id }}-${{ github.run_attempt }}
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

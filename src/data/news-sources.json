@@ -1,0 +1,35 @@
+[
+  {
+    "id": "vnexpress",
+    "name": "VnExpress International",
+    "region": "VN",
+    "url": "https://e.vnexpress.net/rss/news.rss",
+    "homepage": "https://e.vnexpress.net/",
+    "articleHosts": ["e.vnexpress.net"],
+    "kind": "當地主流媒體",
+    "language": "英文",
+    "note": "候選公開 RSS；初次成功擷取前尚未驗證可用性。與其他語言版不算獨立來源。"
+  },
+  {
+    "id": "bbc-vietnamese",
+    "name": "BBC News Tiếng Việt",
+    "region": "VN",
+    "url": "https://feeds.bbci.co.uk/vietnamese/rss.xml",
+    "homepage": "https://www.bbc.com/vietnamese",
+    "articleHosts": ["www.bbc.com", "www.bbc.co.uk", "bbc.com", "bbc.co.uk"],
+    "kind": "國際媒體",
+    "language": "越南文",
+    "note": "越南語不等於越南境內新聞，另以越南地名關鍵字篩選；不代表獨立查證。"
+  },
+  {
+    "id": "vietnamnews",
+    "name": "Việt Nam News",
+    "region": "VN",
+    "url": "https://vietnamnews.vn/rss/society.rss",
+    "homepage": "https://vietnamnews.vn/",
+    "articleHosts": ["vietnamnews.vn", "www.vietnamnews.vn"],
+    "kind": "國營通訊社旗下媒體",
+    "language": "英文",
+    "note": "屬 Vietnam News Agency 體系；保留來源背景，與不同編採來源交叉閱讀。候選 RSS 待實際驗證。"
+  }
+]
