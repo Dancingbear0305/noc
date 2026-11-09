@@ -23,9 +23,9 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
     .waitFor();
   if (await page.getByRole("link", { name: "故障排查", exact: true }).count())
     throw Error("Old wizard visible");
-  await page.getByRole("button", { name: "DEMO", exact: true }).click();
+  await page.getByRole("button", { name: "SPD", exact: true }).click();
   await page.getByRole("button", { name: "TW", exact: true }).click();
-  await page.getByRole("button", { name: "示例 SG", exact: true }).click();
+  await page.getByRole("button", { name: "SG機房", exact: true }).click();
   await page
     .getByRole("button", { name: "GNM · 尚未串接", exact: true })
     .waitFor();
@@ -93,7 +93,62 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
   await page.getByText("等待首次篩選", { exact: true }).waitFor();
   await page.getByRole("button", { name: "地區", exact: true }).click();
   await page.getByRole("button", { name: "SG", exact: true }).click();
-  await page.getByRole("button", { name: "DEMO", exact: true }).waitFor();
+  await page.getByRole("button", { name: "SPD", exact: true }).waitFor();
+  const productButtons = await page
+    .getByRole("group", { name: "產品", exact: true })
+    .getByRole("button")
+    .allTextContents();
+  if (
+    productButtons
+      .filter((x) => x !== "全部")
+      .sort()
+      .join(",") !== ["SPD", "GNG", "UD"].sort().join(",")
+  )
+    throw Error("SG product group mismatch");
+  page.once("dialog", (d) => d.accept());
+  await page
+    .getByRole("button", { name: "新的排查／重設", exact: true })
+    .click();
+  await page.getByRole("button", { name: "產品", exact: true }).click();
+  await page.getByRole("button", { name: "DF", exact: true }).click();
+  await page.getByRole("button", { name: "TW", exact: true }).click();
+  await page.getByRole("button", { name: "TW機房", exact: true }).waitFor();
+  if (await page.getByRole("button", { name: "TH機房", exact: true }).count())
+    throw Error("Wrong regional IDC offered");
+  await page.getByRole("button", { name: "DF", exact: true }).click();
+  await page.getByRole("button", { name: "TH", exact: true }).click();
+  await page.getByRole("button", { name: "TH機房", exact: true }).waitFor();
+  // Custom/imported data must survive reload; switching demo requires confirmation.
+  await page.evaluate(() => localStorage.removeItem("noc:desk-session"));
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "noc:products",
+      JSON.stringify([
+        {
+          id: "local-sample",
+          code: "LOCAL_SAMPLE",
+          regions: ["TW"],
+          responsibleTeams: {},
+          idcMappings: [],
+          notes: "public synthetic custom dataset",
+          verificationStatus: "verify",
+        },
+      ]),
+    ),
+  );
+  await page.reload();
+  await page
+    .getByRole("button", { name: "LOCAL_SAMPLE", exact: true })
+    .waitFor();
+  page.once("dialog", (d) => d.dismiss());
+  await page.getByRole("button", { name: "載入篩選示範", exact: true }).click();
+  await page
+    .getByRole("button", { name: "LOCAL_SAMPLE", exact: true })
+    .waitFor();
+  page.once("dialog", (d) => d.accept());
+  await page.getByRole("button", { name: "載入篩選示範", exact: true }).click();
+  await page.getByRole("button", { name: "SPD", exact: true }).waitFor();
+  await page.locator(".history-hint").filter({ hasText: "下降 12%" }).waitFor();
   await page.setViewportSize({ width: 390, height: 844 });
   if (
     await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)
@@ -101,7 +156,7 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
     throw Error("Mobile overflow");
   if (errors.length) throw Error(errors.join("\n"));
   console.log(
-    "PASS: cascading selectors, tools, 5/10 minute notices, persistent timer, pause, SOP link, activity observation/history, same-page navigation, reverse selection, mobile",
+    "PASS: 11 demo products, regional/IDC mappings, custom-data preservation and confirmed switching, cascading selectors, tools, 5/10 minute notices, persistent timer, pause, SOP link, activity observation/history, same-page navigation, reverse selection, mobile",
   );
   await browser.close();
 })().catch((e) => {

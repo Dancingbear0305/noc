@@ -7,7 +7,7 @@ import {
   eventKey,
   observationError,
 } from "../src/services/desk";
-import { demoProducts } from "../src/data/products";
+import { legacyDemoProducts as demoProducts } from "../src/data/products";
 const blank = { productId: "", region: "", idc: "" };
 describe("單頁篩選", () => {
   it("產品→地區→機房及反向查詢保留未知對應", () => {

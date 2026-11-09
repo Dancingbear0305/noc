@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ccuFlow, issueTypes } from "../src/data/flows";
-import { demoProducts } from "../src/data/products";
+import { legacyDemoProducts as demoProducts } from "../src/data/products";
 import {
   validateFlow,
   validateProducts,

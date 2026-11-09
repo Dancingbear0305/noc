@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocal } from "../hooks/useLocal";
-import { demoProducts, statusLabels } from "../data/products";
+import {
+  demoProducts,
+  statusLabels,
+  isLegacyDemo,
+  isCurrentDemo,
+} from "../data/products";
 import { regionalTools } from "../data/region-tools";
 import {
   available,
@@ -55,6 +60,11 @@ export function Workbench() {
       window.removeEventListener("focus", refresh);
     };
   }, []);
+  useEffect(() => {
+    if (isLegacyDemo(products) && setProducts(demoProducts)) {
+      setSession({ ...session, productId: "", region: "", idc: "" });
+    }
+  }, [products]);
   const elapsed = elapsedSeconds(session, now.getTime());
   const level = timerLevel(elapsed);
   const rows = products.filter((p) => matchesSelection(p, session));
@@ -108,6 +118,29 @@ export function Workbench() {
           先選一個產品、地區或機房 → 縮小範圍 →
           開啟工具。首次選擇開始計時。不執行正式環境操作。
         </p>
+        <div className="notice">
+          <span>
+            {isCurrentDemo(products)
+              ? "目前使用 11 個產品的假設篩選資料，非正式機房配置。"
+              : "目前使用本機產品資料；切換示範前請保留自己的原始匯入檔。"}
+          </span>
+          <button
+            onClick={() => {
+              if (
+                !isCurrentDemo(products) &&
+                !isLegacyDemo(products) &&
+                !confirm(
+                  "以公開假設示範取代目前產品資料？請先保留自己的原始匯入檔。活動、觀察及工具不會清除。",
+                )
+              )
+                return;
+              if (setProducts(demoProducts))
+                setSession({ ...session, productId: "", region: "", idc: "" });
+            }}
+          >
+            載入篩選示範
+          </button>
+        </div>
         <nav className="desk-nav">
           <a
             href="#desk-filters"
