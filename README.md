@@ -1,81 +1,55 @@
-# NOC Navigator
+# NOC Navigator — 單頁 CCU 排查工作台
 
-繁體中文 NOC 工作輔助工具。React + TypeScript + Vite + Tailwind CSS + React Router + Lucide React；純靜態、無後端、無 AI API。
+以最少點擊找到排查線索。React / TypeScript / Vite / Tailwind CSS，無後端、無 AI API，不操作正式環境。
 
-## 開發
+## 啟動
 
-Node.js 24、npm 11。
+安裝 Node.js 24 LTS，在專案資料夾內執行（Windows 可用 `npm.cmd`）：
 
 ```sh
 npm ci
 npm run dev
 npm test
 npm run build
-npm run preview
 ```
 
-## 功能範圍
+## 操作
 
-- Dashboard、最近使用紀錄、深／淺色模式、響應式導覽與術語搜尋。
-- CCU 完整選項式流程：產品／地區、趨勢、同地區產品、登入、MA、活動、玩家回報、ISP、IDC；可返回、重新開始、查看路徑、未知資訊、相關連結與複製摘要。
-- 其他九類異常提供初步檢查清單；不是完整問答式流程，也不是正式 SOP。
-- 產品／地區／IDC 多條件搜尋、排序與展開詳細資訊；不推定未記錄的團隊或地區與 IDC 關聯。
-- 本機網址新增／編輯／刪除／搜尋、HTTP(S) 驗證、新分頁開啟、流程關聯。
-- 本機事件紀錄、狀態、純文字／Markdown 摘要與保守英文回報模板。
-- 核心術語文章、翻卡、產品地區基礎測驗、不熟悉標記與答題紀錄。
-- 本機資料匯入、格式驗證、清除功能；AIAnalysisService 僅介面，不連線。
+1. 首頁選擇從產品、地區或機房開始，以按鈕逐步縮小範圍；改選上游會清除下游選擇。未記錄的機房對應只作候選，不推測團隊。
+2. 首次篩選開始計時，右側在 5／10 分鐘顯示提示。使用時間戳計算，重新整理仍保留；可暫停、繼續、結束／重設。十分鐘出現使用者設定的正式通報流程連結，不自動通報。
+3. GNM／告警／原廠工具先保留不可點擊按鈕；同頁可新增實際工具連結。外部 Downdetector 與新聞站以新分頁開啟；未確認地區不虛構網址，不嵌入第三方 iframe。VN 新聞標題需手動點擊才載入本站快照，避免首頁自動等待 RSS。
+4. 右側列出今天、昨天、七天前已記錄的節假日與活動；尚未串接節假日／球賽 API，沒有紀錄不代表沒有活動。可同頁新增、編輯、刪除。
+5. 點擊活動記錄 CCU 上升／下降及百分比、備註，存入本機觀察知識庫。相同活動名稱＋地區出現時帶出歷史觀察，不自動判斷因果或推定下次日期。觀察保留日期、產品、地區、方向、可空白百分比。刪除活動不刪歷史觀察。
+6. 本機匯入、工具管理、通報網址與資料清除均可在首頁完成。舊頁面路徑會導回首頁，不再提供排查情境入口。
 
-## 機敏資訊不得上 GitHub
+## 私人資料與公開版
 
-原始碼、測試、文件、Actions 紀錄、截圖與部署產物只能含公開合成示例。真實 CCU 人數、內部網址、事件、帳密、Token、產品／網路架構等資料不得提交或發佈。私人產品檔案放在儲存庫之外，於「設定」匯入本機瀏覽器。勿把它放在 `src`、`public` 或任何 Git 追蹤路徑。
+程式碼僅含合成產品示例。真實產品／機房對應應放在儲存庫外，以首頁「本機資料匯入與清除」匯入 JSON。新的私人筆記不會包入原始碼、測試、截圖、Actions 或部署產物。
 
-網址與個人資料存在目前網域的 localStorage，不上傳。不應保存密碼、Token 或機密資訊；資料不加密，能被同來源程式及有裝置存取權者讀取。部署到 GitHub Pages 不代表獲准處理公司資料；請先遵守公司政策。不要輸入實際 CCU 人數。清除本機資料不影響其他裝置，也無法撤銷已複製或分享的內容。
+活動觀察中的 CCU 百分比只存瀏覽器 `noc:observations`，不發送至 GitHub 或新聞來源，不提供自動上傳或同步。localStorage 不加密，是否可存公司資料須遵循公司政策；不得保存帳密或 Token。清除全部本機資料將一併清除計時、篩選、活動、觀察、工具與通報網址。不要把任何實際觀測或內部網址放進公開原始碼。
 
-`.gitignore` 是便利措施，不能攔截所有秘密。提交前人工檢查 `git diff --cached`，部署前檢查 `dist`；不可把自動測試視為機敏資訊偵測保證。程式不執行正式環境操作，也不自動載入外部監控。
+仍保留舊 `noc:exceptions` 活動資料，新的欄位允許指定地區；舊觀察不會被捏造或自動轉成百分比。
 
-## GitHub Pages
+## 部署
 
-1. 將**審查後的公開程式碼**提交到 `main`。
-2. Repository Settings → Pages → Source 選擇 **GitHub Actions**。
-3. `.github/workflows/pages.yml` 會執行 `npm ci`、測試、建置，僅上傳 `dist`，通過後部署。
+GitHub Settings → Pages → Source 選 **GitHub Actions**。`.github/workflows/pages.yml` 驗證、建置並部署 `dist`。HashRouter 與相對 base 支援 `/noc/` 子路徑；首頁內跳轉不更動 Router hash。沒有設定 Pages 時 deploy-pages 會回傳 404。
 
-Vite `base: './'` 使用相對資產路徑，HashRouter 使用 `/#/products` 等路由，可部署在 `/noc/` 子路徑。重新整理 `https://<owner>.github.io/noc/#/products` 不會向伺服器要求 `/products`，避免 404。不要將網址改成沒有 `#` 的內部路徑。PR 僅驗證，不部署。尚未在實際 GitHub Pages 驗證或發佈。
-
-## 結構與擴充
-
-```
-src/components  共用版型
-src/pages       工作頁面
-src/data        公開示例、流程、知識
-src/types       資料型別與 AI 擴充介面
-src/hooks       本機狀態
-src/services    查詢、流程驗證、摘要及輸入驗證
-src/utils       共用工具的擴充位置
-tests           流程、查詢、資料與 URL 安全測試
-docs            資料及流程編輯方式
-```
-
-參見 [資料與流程維護](docs/data-and-flows.md)。Phase 2 尚未完整實作：其餘告警逐步問答、完整知識庫清單、地區反向與情境測驗。Phase 3 僅保留介面，沒有 AI 分析服務。
-
-## 瀏覽器驗收
-
-另開終端啟動 `npm run dev`，再執行：
+## 測試與維護
 
 ```sh
+npm test
+npm run build
+# 先啟動 dev，另開終端：
 npx playwright install chromium
 npm run test:e2e
 ```
 
-如果系統已有 Chromium，可省略下載並用 `CHROMIUM_PATH=/usr/bin/chromium npm run test:e2e`。`BASE_URL` 可指定本機靜態測試站點（包括 `/noc/` 子路徑）。驗收只產生合成資料，使用全新暫存瀏覽器，不使用私人匯入檔。涵蓋 CCU 全流程／返回、事件、本機連結 CRUD、匯入、篩選、路由重新整理、行動版版面、主題及本機清除。CI 預設執行核心測試與建置，瀏覽器驗收需自行執行。
+已有 Chromium 可用 `CHROMIUM_PATH=/usr/bin/chromium`；`BASE_URL` 可指定本機 `/noc/` 靜態測試站。
 
-## 近期特例懸浮小窗
+- `src/pages/Workbench.tsx`：單頁工作台與計時控制。
+- `src/components/ActivityRail.tsx`：活動與本機觀察。
+- `src/services/desk.ts`：多向篩選、計時與觀察驗證。
+- `src/data/region-tools.ts`：公開地區入口，非產品基礎設施對應。
+- 其他資料型別、匯入與工具服務仍可重用；舊 Wizard 元件不再掛載。
 
-右下角「近期特例」可在任何頁面展開／收合，支援自訂標題、節假日／球賽活動／CCU 觀察／其他分類、起迄日期與補充說明，以及編輯、刪除。新增時預設本週（週一至週日），也可快速選「今天」。期間含起迄日，以目前裝置日期判斷有效、即將到來或已結束；近期檢視涵蓋今天前後七天及期間仍有效的提醒，「全部」可管理其他日期。角標顯示有效提醒數，過期提醒不會自動刪除。
-
-提醒僅是使用者提供的觀察背景，不是故障根因或正式日曆資訊；不會自動抓取節假日、賽程或監控資料，也不會寫入事件結論。資料僅保存在瀏覽器 `noc:exceptions`，與開關偏好一起納入「清除全部本機資料」。儲存失敗時保留編輯內容並顯示錯誤。不要填入實際 CCU 人數、內部網址或任何機敏資訊；提醒不會上傳或打包到 GitHub Pages。
-
-## VN 公開新聞試用版
-
-「地區查詢」選擇 VN 可查看新聞卡片、來源背景與狀態，支援來源／主題篩選、同標題合併與原文新分頁。資料與本機產品、事件、特例完全分開；不自動送出私人資料。候選來源為 VnExpress International、BBC News Tiếng Việt、Việt Nam News，RSS 與使用規範尚待真實連線驗證。目前雲端白名單阻擋新聞網域，畫面會顯示尚未取得新聞，不提供虛構內容。
-
-`npm run news:update` 更新公開 RSS metadata，然後 `npm run build`。Pages workflow 已加入每 3 小時排程；需在預設分支發布並啟用 Pages 後才會執行。顯示嘗試／成功時間，失敗或過期明確提示。見 [新聞來源與更新文件](docs/news.md) 了解資料界線、網路前提及限制。
+[產品資料格式](docs/data-and-flows.md)（流程部分為舊版參考） · [VN 公開新聞更新](docs/news.md)。目前未串接監控圖、正式告警、節假日／球賽資料源或 Confluence。新聞成功與否依實際快照狀態，不保證即時；也不會將背景資訊當成根因。
