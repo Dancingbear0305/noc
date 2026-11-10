@@ -23,7 +23,20 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
     .waitFor();
   if (await page.getByRole("link", { name: "故障排查", exact: true }).count())
     throw Error("Old wizard visible");
+  if (await page.locator("#desk-filters details").count())
+    throw Error("Product inventory must be hidden initially");
+  if (await page.locator("#desk-notes,#desk-config").count())
+    throw Error("Removed sections still rendered");
+  const groupButton = page.getByRole("button", {
+    name: "創群通知 · API 尚未串接",
+    exact: true,
+  });
+  if (!(await groupButton.isDisabled()))
+    throw Error("Unconfigured broadcast must be disabled");
   await page.getByRole("button", { name: "SPD", exact: true }).click();
+  if (await page.getByRole("region", { name: "維運資訊", exact: true }).count())
+    throw Error("Team details shown before region");
+
   await page.getByRole("button", { name: "TW", exact: true }).click();
   await page.getByRole("button", { name: "SG機房", exact: true }).click();
   await page
@@ -40,15 +53,20 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
     .waitFor();
   await page.clock.fastForward(300000);
   await page.getByRole("alert").filter({ hasText: "已達 5 分鐘" }).waitFor();
-  await page.clock.fastForward(300000);
-  await page.getByRole("alert").filter({ hasText: "已達 10 分鐘" }).waitFor();
+  await page.clock.fastForward(179000);
+  if (await page.getByRole("alert").filter({ hasText: "已達 8 分鐘" }).count())
+    throw Error("Early eight-minute alert");
+  await page.clock.fastForward(1000);
+  await page.getByRole("alert").filter({ hasText: "已達 8 分鐘" }).waitFor();
   await page.reload();
-  await page.getByRole("alert").filter({ hasText: "已達 10 分鐘" }).waitFor();
-  await page.getByText("設定通報流程網址", { exact: true }).click();
-  await page
-    .getByLabel("正式通報流程網址")
-    .fill("https://example.com/public-sop");
-  await page.getByRole("button", { name: "儲存通報網址", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "已達 8 分鐘" }).waitFor();
+  await page.evaluate(() =>
+    localStorage.setItem(
+      "noc:escalation-url",
+      JSON.stringify("https://example.com/public-sop"),
+    ),
+  );
+  await page.reload();
   const sop = page.getByRole("link", {
     name: "開啟正式通報流程 ↗",
     exact: true,
@@ -73,19 +91,11 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
   await page
     .getByRole("button", { name: "存進本機知識庫", exact: true })
     .click();
-  await page
-    .locator("#desk-notes")
-    .getByText("公開合成節慶", { exact: true })
-    .waitFor();
-  await page.reload();
-  await page
-    .locator("#desk-notes")
-    .getByText("公開合成節慶", { exact: true })
-    .waitFor();
   await page.locator(".history-hint").filter({ hasText: "下降 12%" }).waitFor();
-  await page.getByRole("link", { name: "本機知識", exact: true }).click();
-  if (!page.url().endsWith("/#/"))
-    throw Error("In-page jump broke hash routing");
+  await page.reload();
+  await page.locator(".history-hint").filter({ hasText: "下降 12%" }).waitFor();
+  if (await page.locator("#desk-notes,#desk-config").count())
+    throw Error("Removed sections reappeared");
   page.once("dialog", (d) => d.accept());
   await page
     .getByRole("button", { name: "新的排查／重設", exact: true })
@@ -156,7 +166,7 @@ const baseURL = (process.env.BASE_URL || "http://127.0.0.1:5173").replace(
     throw Error("Mobile overflow");
   if (errors.length) throw Error(errors.join("\n"));
   console.log(
-    "PASS: 11 demo products, regional/IDC mappings, custom-data preservation and confirmed switching, cascading selectors, tools, 5/10 minute notices, persistent timer, pause, SOP link, activity observation/history, same-page navigation, reverse selection, mobile",
+    "PASS: 11 demo products, regional/IDC mappings, custom-data preservation and confirmed switching, cascading selectors, tools, 5/8 minute notices, persistent timer, pause, SOP link, activity observation/history, removed panels, conditional team details, disabled API placeholder, reverse selection, mobile",
   );
   await browser.close();
 })().catch((e) => {

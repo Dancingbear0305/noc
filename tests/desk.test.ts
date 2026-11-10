@@ -48,7 +48,9 @@ describe("計時與觀察", () => {
     expect(elapsedSeconds(session, 301000)).toBe(300);
     expect(timerLevel(299)).toBe(0);
     expect(timerLevel(300)).toBe(5);
-    expect(timerLevel(600)).toBe(10);
+    expect(timerLevel(479)).toBe(5);
+    expect(timerLevel(480)).toBe(8);
+    expect(timerLevel(600)).toBe(8);
     expect(elapsedSeconds({ ...session, pausedAt: 301000 }, 901000)).toBe(300);
     expect(elapsedSeconds({ ...session, pausedMs: 600000 }, 901000)).toBe(300);
   });

@@ -75,7 +75,7 @@ export function elapsedSeconds(session: DeskSession, now: number) {
       );
 }
 export function timerLevel(seconds: number) {
-  return seconds >= 600 ? 10 : seconds >= 300 ? 5 : 0;
+  return seconds >= 480 ? 8 : seconds >= 300 ? 5 : 0;
 }
 export function eventKey(title: string, region: string) {
   return (
